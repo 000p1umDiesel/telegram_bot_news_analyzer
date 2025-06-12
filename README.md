@@ -110,7 +110,7 @@ TELEGRAM_CHANNEL_IDS=...
 OLLAMA_BASE_URL=http://ollama:11434
 # Модель, которую будет использовать бот.
 # Она будет автоматически скачана при первом запуске.
-OLLAMA_MODEL=qwen2:7b-chat-q5_K_M
+OLLAMA_MODEL=qwen2:7b
 
 # ======== Web Search (Tavily) ========
 # API ключ для поиска. Получить можно на https://tavily.com/
