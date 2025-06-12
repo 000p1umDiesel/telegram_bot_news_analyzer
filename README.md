@@ -21,7 +21,7 @@ graph TD
     end
 
     subgraph "Инфраструктура Docker"
-        BS[🤖 Бот-сервис (Aiogram)]
+        BS[🤖 Бот-сервис (Aiogram)]; // Добавлена точка с запятой
         MS[📡 Сервис Мониторинга (Telethon)]
         LA[🧠 Анализатор (Ollama + LLM)]
         DB[(🗃️ База данных SQLite)]
@@ -47,7 +47,6 @@ graph TD
     style LA fill:#E1D5E7,stroke:#9673A6
     style TS fill:#E1D5E7,stroke:#9673A6
     style DB fill:#FFE6CC,stroke:#D79B00
-
 ```
 
 **Логика работы:**
