@@ -1,7 +1,8 @@
 # bot_services.py
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, types, F
 from aiogram.filters import Command, CommandObject
 from aiogram.enums import ParseMode
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from services import (
     data_manager,
     llm_analyzer,
@@ -14,20 +15,94 @@ logger = get_logger()
 dp = Dispatcher()
 
 
-@dp.message(Command("start", "help"))
+def get_subscription_keyboard(user_id: int):
+    builder = InlineKeyboardBuilder()
+    if data_manager.is_subscriber(user_id):
+        builder.button(text="✅ Отписаться от уведомлений", callback_data="unsubscribe")
+    else:
+        builder.button(text="🔔 Подписаться на уведомления", callback_data="subscribe")
+    return builder.as_markup()
+
+
+@dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    """Отправляет приветственное сообщение и предлагает подписаться на рассылку."""
+    if not message.from_user:
+        logger.warning("Получена команда /start не от пользователя.")
+        return
+    user_id = message.from_user.id
+    welcome_text = (
+        "Привет! Я бот для анализа новостей и работы с LLM.\n\n"
+        "Чтобы посмотреть доступные команды, нажми /help.\n\n"
+        "Вы можете подписаться на уведомления, чтобы получать актуальные новости."
+    )
+    await message.answer(welcome_text, reply_markup=get_subscription_keyboard(user_id))
+
+
+@dp.callback_query(lambda c: c.data == "subscribe")
+async def process_callback_subscribe(callback_query: types.CallbackQuery):
+    if not callback_query.from_user:
+        await callback_query.answer(
+            "Не удалось определить пользователя.", show_alert=True
+        )
+        return
+    user_id = callback_query.from_user.id
+    if data_manager.is_subscriber(user_id):
+        await callback_query.answer("Вы уже подписаны!")
+    else:
+        data_manager.add_subscriber(user_id)
+        await callback_query.answer("Вы успешно подписались на уведомления!")
+        if callback_query.message:
+            await callback_query.message.edit_reply_markup(
+                reply_markup=get_subscription_keyboard(user_id)
+            )
+
+
+@dp.callback_query(lambda c: c.data == "unsubscribe")
+async def process_callback_unsubscribe(callback_query: types.CallbackQuery):
+    if not callback_query.from_user:
+        await callback_query.answer(
+            "Не удалось определить пользователя.", show_alert=True
+        )
+        return
+    user_id = callback_query.from_user.id
+    if not data_manager.is_subscriber(user_id):
+        await callback_query.answer("Вы и так не подписаны.")
+    else:
+        data_manager.remove_subscriber(user_id)
+        await callback_query.answer("Вы успешно отписались от уведомлений.")
+        if callback_query.message:
+            await callback_query.message.edit_reply_markup(
+                reply_markup=get_subscription_keyboard(user_id)
+            )
+
+
+@dp.message(Command("help"))
+async def cmd_help(message: types.Message):
     """Отправляет приветственное сообщение со списком команд."""
     help_text = (
-        "👋 **Привет! Я бот для анализа новостей и работы с LLM.**\n\n"
         "**Доступные команды:**\n"
         "/help - Показать это сообщение\n"
         "/status - Показать статус системы\n"
         "/stats - Показать статистику анализа\n"
+        "/subscribe - Управление подпиской на уведомления\n"
         "/chat `<текст>` - Пообщаться с LLM\n"
         "/web `<запрос>` - Поиск в интернете\n"
         "/analyze `<текст>` - Проанализировать произвольный текст"
     )
     await message.answer(help_text, parse_mode=ParseMode.MARKDOWN)
+
+
+@dp.message(Command("subscribe"))
+async def cmd_subscribe(message: types.Message):
+    """Позволяет управлять подпиской."""
+    if not message.from_user:
+        logger.warning("Получена команда /subscribe не от пользователя.")
+        return
+    await message.answer(
+        "Настройте вашу подписку:",
+        reply_markup=get_subscription_keyboard(message.from_user.id),
+    )
 
 
 @dp.message(Command("status"))
@@ -155,9 +230,11 @@ async def cmd_web(message: types.Message, command: CommandObject):
     )
 
 
-@dp.message()
+@dp.message(F.chat.type == "private")
 async def handle_non_command(message: types.Message):
-    """Обрабатывает сообщения без команд как чат с LLM."""
+    """
+    Обрабатывает сообщения без команд как чат с LLM, но только в личных чатах.
+    """
     if message.text and not message.text.startswith("/"):
         await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
         response = await llm_analyzer.get_chat_response(message.text)

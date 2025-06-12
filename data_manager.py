@@ -66,8 +66,15 @@ class DataManager:
                     );
                     """
                 )
+                self.conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS subscribers (
+                        user_id INTEGER PRIMARY KEY
+                    );
+                    """
+                )
                 logger.info(
-                    "Таблицы 'messages', 'analyses' и 'last_processed_ids' успешно проверены/созданы."
+                    "Таблицы 'messages', 'analyses', 'last_processed_ids' и 'subscribers' успешно проверены/созданы."
                 )
         except sqlite3.Error as e:
             logger.error(f"Ошибка при создании таблиц: {e}")
@@ -187,6 +194,58 @@ class DataManager:
         except sqlite3.Error as e:
             logger.error(f"Ошибка при получении статистики: {e}")
             return {}
+
+    def add_subscriber(self, user_id: int):
+        """Добавляет пользователя в список подписчиков."""
+        if not self.conn:
+            return
+        try:
+            with self.conn:
+                self.conn.execute(
+                    "INSERT OR IGNORE INTO subscribers (user_id) VALUES (?)", (user_id,)
+                )
+                logger.info(f"Пользователь {user_id} добавлен в подписчики.")
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при добавлении подписчика {user_id}: {e}")
+
+    def remove_subscriber(self, user_id: int):
+        """Удаляет пользователя из списка подписчиков."""
+        if not self.conn:
+            return
+        try:
+            with self.conn:
+                self.conn.execute(
+                    "DELETE FROM subscribers WHERE user_id = ?", (user_id,)
+                )
+                logger.info(f"Пользователь {user_id} удален из подписчиков.")
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при удалении подписчика {user_id}: {e}")
+
+    def is_subscriber(self, user_id: int) -> bool:
+        """Проверяет, является ли пользователь подписчиком."""
+        if not self.conn:
+            return False
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT 1 FROM subscribers WHERE user_id = ?", (user_id,))
+            return cursor.fetchone() is not None
+        except sqlite3.Error as e:
+            logger.error(
+                f"Ошибка при проверке подписки для пользователя {user_id}: {e}"
+            )
+            return False
+
+    def get_all_subscribers(self) -> List[int]:
+        """Возвращает список ID всех подписчиков."""
+        if not self.conn:
+            return []
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT user_id FROM subscribers")
+            return [row["user_id"] for row in cursor.fetchall()]
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при получении списка подписчиков: {e}")
+            return []
 
     def close(self):
         """Закрывает соединение с базой данных."""

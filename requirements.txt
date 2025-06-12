@@ -1,11 +1,19 @@
-aiohttp==3.9.5
+# Telegram Bot
 aiogram==3.8.0
-python-dotenv==1.0.1
 telethon==1.36.0
-langchain-community==0.2.5
-tavily-python==0.3.3
-requests==2.32.3
-pydantic==2.7.4
-langchain-core==0.2.9
+
+# LLM & AI
 langchain==0.2.5
-ollama==0.2.1 
+langchain-community==0.2.5
+langchain-core==0.2.9
+pydantic<3,>=2  # Langchain requires Pydantic v2
+
+# Device Detection for Ollama
+torch==2.7.1
+
+# Web Search
+tavily-python==0.3.3
+
+# Utilities
+python-dotenv==1.0.1
+aiohttp==3.9.5  # Dependency for aiogram 32
