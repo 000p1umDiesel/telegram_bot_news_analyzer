@@ -14,8 +14,6 @@ TELEGRAM_PHONE = os.getenv("TELEGRAM_PHONE")
 # --- Telegram Bot ---
 # Токен для вашего бота (получается у @BotFather)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-# ID чата для отправки результатов анализа
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Проверка наличия обязательных переменных
 if not TELEGRAM_BOT_TOKEN:
