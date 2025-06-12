@@ -40,7 +40,6 @@ graph TD
     
     BS -- Запросы к БД --> DB
     
-    % Стили для узлов с более насыщенными цветами и белым текстом
     style U fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#FFFFFF,font-weight:bold
     style TC fill:#F44336,stroke:#C62828,stroke-width:2px,color:#FFFFFF,font-weight:bold
     style BS fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#FFFFFF,font-weight:bold
