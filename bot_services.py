@@ -15,9 +15,9 @@ logger = get_logger()
 dp = Dispatcher()
 
 
-def get_subscription_keyboard(user_id: int):
+def get_subscription_keyboard(chat_id: int):
     builder = InlineKeyboardBuilder()
-    if data_manager.is_subscriber(user_id):
+    if data_manager.is_subscriber(chat_id):
         builder.button(text="✅ Отписаться от уведомлений", callback_data="unsubscribe")
     else:
         builder.button(text="🔔 Подписаться на уведомления", callback_data="subscribe")
@@ -27,54 +27,60 @@ def get_subscription_keyboard(user_id: int):
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     """Отправляет приветственное сообщение и предлагает подписаться на рассылку."""
-    if not message.from_user:
-        logger.warning("Получена команда /start не от пользователя.")
+    if not message.chat:
+        logger.warning("Получена команда /start без информации о чате.")
         return
-    user_id = message.from_user.id
+    chat_id = message.chat.id
     welcome_text = (
         "Привет! Я бот для анализа новостей и работы с LLM.\n\n"
         "Чтобы посмотреть доступные команды, нажми /help.\n\n"
         "Вы можете подписаться на уведомления, чтобы получать актуальные новости."
     )
-    await message.answer(welcome_text, reply_markup=get_subscription_keyboard(user_id))
+    await message.answer(welcome_text, reply_markup=get_subscription_keyboard(chat_id))
 
 
 @dp.callback_query(lambda c: c.data == "subscribe")
 async def process_callback_subscribe(callback_query: types.CallbackQuery):
-    if not callback_query.from_user:
-        await callback_query.answer(
-            "Не удалось определить пользователя.", show_alert=True
-        )
+    """Обрабатывает нажатие на кнопку 'Подписаться'."""
+    # Проверяем, что можем получить информацию о чате из колбэка
+    if not callback_query.message:
+        await callback_query.answer("Не удалось определить чат.", show_alert=True)
         return
-    user_id = callback_query.from_user.id
-    if data_manager.is_subscriber(user_id):
-        await callback_query.answer("Вы уже подписаны!")
+
+    # Получаем ID чата. Это может быть ID пользователя (в личке) или ID группы.
+    chat_id = callback_query.message.chat.id
+
+    if data_manager.is_subscriber(chat_id):
+        await callback_query.answer("Этот чат уже подписан!")
     else:
-        data_manager.add_subscriber(user_id)
-        await callback_query.answer("Вы успешно подписались на уведомления!")
-        if callback_query.message:
-            await callback_query.message.edit_reply_markup(
-                reply_markup=get_subscription_keyboard(user_id)
-            )
+        data_manager.add_subscriber(chat_id)
+        await callback_query.answer("✅ Чат успешно подписан на уведомления!")
+        # Обновляем клавиатуру, чтобы показать кнопку "Отписаться"
+        await callback_query.message.edit_reply_markup(
+            reply_markup=get_subscription_keyboard(chat_id)
+        )
 
 
 @dp.callback_query(lambda c: c.data == "unsubscribe")
 async def process_callback_unsubscribe(callback_query: types.CallbackQuery):
-    if not callback_query.from_user:
-        await callback_query.answer(
-            "Не удалось определить пользователя.", show_alert=True
-        )
+    """Обрабатывает нажатие на кнопку 'Отписаться'."""
+    # Проверяем, что можем получить информацию о чате из колбэка
+    if not callback_query.message:
+        await callback_query.answer("Не удалось определить чат.", show_alert=True)
         return
-    user_id = callback_query.from_user.id
-    if not data_manager.is_subscriber(user_id):
-        await callback_query.answer("Вы и так не подписаны.")
+
+    # Получаем ID чата. Это может быть ID пользователя (в личке) или ID группы.
+    chat_id = callback_query.message.chat.id
+
+    if not data_manager.is_subscriber(chat_id):
+        await callback_query.answer("Этот чат и так не подписан.")
     else:
-        data_manager.remove_subscriber(user_id)
-        await callback_query.answer("Вы успешно отписались от уведомлений.")
-        if callback_query.message:
-            await callback_query.message.edit_reply_markup(
-                reply_markup=get_subscription_keyboard(user_id)
-            )
+        data_manager.remove_subscriber(chat_id)
+        await callback_query.answer("✅ Чат успешно отписан от уведомлений.")
+        # Обновляем клавиатуру, чтобы показать кнопку "Подписаться"
+        await callback_query.message.edit_reply_markup(
+            reply_markup=get_subscription_keyboard(chat_id)
+        )
 
 
 @dp.message(Command("help"))
@@ -96,12 +102,12 @@ async def cmd_help(message: types.Message):
 @dp.message(Command("subscribe"))
 async def cmd_subscribe(message: types.Message):
     """Позволяет управлять подпиской."""
-    if not message.from_user:
-        logger.warning("Получена команда /subscribe не от пользователя.")
+    if not message.chat:
+        logger.warning("Получена команда /subscribe без информации о чате.")
         return
     await message.answer(
-        "Настройте вашу подписку:",
-        reply_markup=get_subscription_keyboard(message.from_user.id),
+        "Настройте подписку для этого чата:",
+        reply_markup=get_subscription_keyboard(message.chat.id),
     )
 
 
