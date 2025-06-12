@@ -30,6 +30,13 @@ class MonitoringService:
                 last_message_id = await self.monitor.get_initial_last_message_id(
                     channel_id
                 )
+                if last_message_id > 0:
+                    logger.info(
+                        f"Канал '{channel_id}' инициализирован с ID: {last_message_id}. Сохраняем в базу."
+                    )
+                    self.data_manager.set_last_message_id(channel_id, last_message_id)
+                    # Пропускаем первую итерацию, чтобы не дублировать последнее сообщение
+                    return
 
             messages = await self.monitor.get_new_messages(channel_id, last_message_id)
 
@@ -60,7 +67,9 @@ class MonitoringService:
                         else "N/A"
                     )
                     notification_data = {
-                        "channel_title": message["channel_title"],
+                        "channel_title": message.get(
+                            "channel_title", "Неизвестный источник"
+                        ),
                         "message_link": message_link,
                         "summary": analysis.summary,
                         "sentiment": analysis.sentiment,

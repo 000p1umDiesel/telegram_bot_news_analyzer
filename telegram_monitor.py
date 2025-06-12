@@ -71,6 +71,11 @@ class TelegramMonitor:
 
         try:
             channel_entity = await self.client.get_entity(channel_id)
+
+            # Безопасно получаем имя пользователя и заголовок
+            channel_username = getattr(channel_entity, "username", None)
+            channel_title = getattr(channel_entity, "title", "Неизвестный канал")
+
             messages = await self.client.get_messages(
                 channel_entity,
                 min_id=last_message_id,
@@ -88,6 +93,8 @@ class TelegramMonitor:
                                 "text": msg.text,
                                 "date": msg.date.isoformat(),
                                 "channel_id": channel_id,
+                                "channel_title": channel_title,
+                                "channel_username": channel_username,
                             }
                         )
             return result
