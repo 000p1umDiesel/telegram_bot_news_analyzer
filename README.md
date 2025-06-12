@@ -21,11 +21,11 @@ graph TD
     end
 
     subgraph "Инфраструктура Docker"
-        BS[🤖 Бот-сервис Aiogram] 
-        MS[📡 Сервис Мониторинга Telethon]
-        LA[🧠 Анализатор Ollama + LLM]
+        BS[🤖 Бот-сервис - Aiogram]
+        MS[📡 Сервис Мониторинга - Telethon]
+        LA[🧠 Анализатор - Ollama + LLM]
         DB[🗃️ База данных SQLite]
-        TS[🌐 Поисковый сервис Tavily]
+        TS[🌐 Поисковый сервис - Tavily]
     end
 
     U -- Команды --> BS
@@ -40,13 +40,14 @@ graph TD
     
     BS -- Запросы к БД --> DB
     
-    style U fill:#D5E8D4,stroke:#82B366
-    style TC fill:#F8CECC,stroke:#B85450
-    style BS fill:#DAE8FC,stroke:#6C8EBF
-    style MS fill:#DAE8FC,stroke:#6C8EBF
-    style LA fill:#E1D5E7,stroke:#9673A6
-    style TS fill:#E1D5E7,stroke:#9673A6
-    style DB fill:#FFE6CC,stroke:#D79B00
+    % Стили для узлов с более насыщенными цветами и белым текстом
+    style U fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style TC fill:#F44336,stroke:#C62828,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style BS fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style MS fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style LA fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style TS fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    style DB fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#FFFFFF,font-weight:bold
 ```
 
 **Логика работы:**
