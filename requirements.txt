@@ -1,0 +1,11 @@
+aiohttp==3.9.5
+aiogram==3.8.0
+python-dotenv==1.0.1
+telethon==1.36.0
+langchain-community==0.2.5
+tavily-python==0.3.3
+requests==2.32.3
+pydantic==2.7.4
+langchain-core==0.2.9
+langchain==0.2.5
+ollama==0.2.1 
