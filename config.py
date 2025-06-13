@@ -36,7 +36,7 @@ ERROR_RETRY_SECONDS = int(os.getenv("ERROR_RETRY_INTERVAL", "300"))
 # URL для Ollama API
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 # Название модели Ollama для использования
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "ilyagusev/saiga_llama3")
 
 # --- Web Search ---
 # API ключ для Tavily Search

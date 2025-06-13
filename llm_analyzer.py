@@ -33,7 +33,6 @@ class OllamaAnalyzer:
         self, model: str = config.OLLAMA_MODEL, base_url: str = config.OLLAMA_BASE_URL
     ):
         self.logger = get_logger()
-        self._log_device_info()
         try:
             self.llm = Ollama(model=model, base_url=base_url)
             # Простая проверка соединения
@@ -42,31 +41,6 @@ class OllamaAnalyzer:
         except Exception as e:
             self.logger.error(f"Не удалось инициализировать Ollama: {e}")
             raise
-
-    def _log_device_info(self):
-        """Логирует информацию о доступных устройствах (CUDA/MPS)."""
-        try:
-            import torch
-
-            if torch.cuda.is_available():
-                self.logger.info(
-                    "Обнаружена поддержка CUDA. Ollama должна автоматически использовать GPU."
-                )
-            elif torch.backends.mps.is_available():
-                self.logger.info(
-                    "Обнаружена поддержка MPS. Ollama должна автоматически использовать MPS на Mac."
-                )
-            else:
-                self.logger.info(
-                    "CUDA и MPS не обнаружены. Ollama будет использовать CPU."
-                )
-        except ImportError:
-            self.logger.info(
-                "Библиотека torch не установлена. Невозможно определить доступность CUDA/MPS. "
-                "Ollama будет использовать настройки по умолчанию."
-            )
-        except Exception as e:
-            self.logger.warning(f"Ошибка при проверке устройства: {e}")
 
     def _clean_and_validate_hashtags(self, hashtags: List[Any]) -> List[str]:
         """Очищает, валидирует и дедуплицирует хештеги."""
